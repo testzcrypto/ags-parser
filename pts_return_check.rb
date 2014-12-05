@@ -194,12 +194,12 @@ def parse_tx(hi=nil, time=nil, tx)
           end
           presum += inval
         end
-              
+
         if donation[:orgsum] == sumprint
           puts "+\"" + hi.to_s + "\";\"" + stamp.to_s + "\";\"" + txbits + "\";\"" + from + "\";\"" + sumprint.to_s + "\";\"" + addr
           donation[:sum] -= sumprint
           data = { :block => hi, :from => from, :txbits =>txbits, :amount => sumprint }
-              donation[:history].push data
+          donation[:history].push data
         end
       end
     else
@@ -214,6 +214,7 @@ end
 
 
 CSV.foreach("pts-genesis-to-81603-sum.csv", :headers => true, :header_converters => :symbol, :converters => :all) do |row|
+  next unless row.fields[1] >= 0.1
   @donations[row.fields[0].to_s] = Hash[row.headers[1..-1].zip(row.fields[1..-1])]
   @donations[row.fields[0].to_s][:orgsum] = @donations[row.fields[0].to_s][:sum]
   @donations[row.fields[0].to_s][:history] = Array.new
@@ -289,6 +290,7 @@ while true do
     @donations.select { |address, vals| vals[:sum] == 0.0 }.each do |address, vals|
       puts "#{address} amount #{vals[:orgsum]} at block #{vals[:history][0][:block]} from #{vals[:history][0][:from]}"
     end
+    puts
   end
 
   # resets starting block height to next unparsed block
