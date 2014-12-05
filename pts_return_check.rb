@@ -173,6 +173,9 @@ def parse_tx(hi=nil, time=nil, tx)
         outval = value
         presum = 0.0
         sumval = 0.0
+        sumprint = 0.0
+        txbits = ""
+        from = ""
         senderhash.each do |key, inval|
           printval = 0.0
           sumval += inval
@@ -184,17 +187,19 @@ def parse_tx(hi=nil, time=nil, tx)
 
           # prints donation stats if input value is above 0
           if printval > 0
-            txbits = tx[0..8]
-            if donation[:orgsum] == printval
-              print "+"
-              donation[:sum] -= printval
-              
-              data = { :block => hi, :from => key.to_s, :txbits =>txbits.to_s, :amount => printval }
-              donation[:history].push data
-            end
-            puts "\"" + hi.to_s + "\";\"" + stamp.to_s + "\";\"" + txbits.to_s + "\";\"" + key.to_s + "\";\"" + printval.round(8).to_s
+            sumprint += printval
+            txbits = tx[0..8].to_s
+            from = key.to_s
+            puts "\"" + hi.to_s + "\";\"" + stamp.to_s + "\";\"" + txbits + "\";\"" + from + "\";\"" + printval.round(8).to_s + "\";\"" + addr
           end
           presum += inval
+        end
+              
+        if donation[:orgsum] == sumprint
+          puts "+\"" + hi.to_s + "\";\"" + stamp.to_s + "\";\"" + txbits + "\";\"" + from + "\";\"" + sumprint.to_s + "\";\"" + addr
+          donation[:sum] -= sumprint
+          data = { :block => hi, :from => from, :txbits =>txbits, :amount => sumprint }
+              donation[:history].push data
         end
       end
     else
